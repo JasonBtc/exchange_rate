@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../converter/converter_page.dart';
 import '../rates/rates_page.dart';
+import '../settings/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,11 +12,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _index = 0;
 
-  // Task 15 完成后再补 settings 页面
   final _pages = const [
     ConverterPage(),
     RatesPage(),
-    Center(child: Text('设置')),
+    SettingsPage(),
   ];
 
   @override
