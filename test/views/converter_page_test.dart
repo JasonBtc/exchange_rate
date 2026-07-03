@@ -48,7 +48,7 @@ void main() {
     await tester.pumpWidget(const GetMaterialApp(home: ConverterPage()));
     await tester.pump();
 
-    expect(find.textContaining('100'), findsWidgets); // 726 CNY ≈ 100 USD
+    expect(find.text('100.00'), findsWidgets); // 726 CNY ≈ 100.00 USD
     Get.reset();
   });
 }

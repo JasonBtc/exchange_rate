@@ -5,16 +5,44 @@ import '../../controllers/settings_controller.dart';
 import '../../core/currency_meta.dart';
 import 'widgets/currency_picker.dart';
 
-class ConverterPage extends StatelessWidget {
+class ConverterPage extends StatefulWidget {
   const ConverterPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final c = Get.find<ConverterController>();
-    final settings = Get.find<SettingsController>();
-    final amountCtrl = TextEditingController(
-        text: c.amount.value == 0 ? '' : c.amount.value.toString());
+  State<ConverterPage> createState() => _ConverterPageState();
+}
 
+class _ConverterPageState extends State<ConverterPage> {
+  late final ConverterController c;
+  late final SettingsController settings;
+  late final TextEditingController amountCtrl;
+  Worker? _amountWorker;
+
+  String _amountToText(double v) => v == 0 ? '' : v.toString();
+
+  @override
+  void initState() {
+    super.initState();
+    c = Get.find<ConverterController>();
+    settings = Get.find<SettingsController>();
+    amountCtrl = TextEditingController(text: _amountToText(c.amount.value));
+    _amountWorker = ever<double>(c.amount, (v) {
+      final next = _amountToText(v);
+      if (amountCtrl.text != next) {
+        amountCtrl.text = next;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _amountWorker?.dispose();
+    amountCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('实时换算')),
       body: RefreshIndicator(
