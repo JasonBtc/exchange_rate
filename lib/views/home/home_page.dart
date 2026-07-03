@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../converter/converter_page.dart';
+import '../rates/rates_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,10 +11,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _index = 0;
 
-  // Task 14/15 完成后再补 rates/settings 页面
+  // Task 15 完成后再补 settings 页面
   final _pages = const [
     ConverterPage(),
-    Center(child: Text('行情')),
+    RatesPage(),
     Center(child: Text('设置')),
   ];
 

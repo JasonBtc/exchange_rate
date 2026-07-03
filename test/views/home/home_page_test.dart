@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 
 import 'package:exchange_rate/controllers/converter_controller.dart';
+import 'package:exchange_rate/controllers/rates_controller.dart';
 import 'package:exchange_rate/controllers/settings_controller.dart';
 import 'package:exchange_rate/core/api_client.dart';
 import 'package:exchange_rate/repositories/rate_repository.dart';
@@ -46,6 +47,7 @@ void main() {
         RateRepository(api: _StubApi(), storage: _MemRateStorage());
     Get.put(SettingsController(storage: _MemSettingsStorage()));
     Get.put(ConverterController(repo: repo));
+    Get.put(RatesController(repo: repo));
   });
 
   tearDown(() {
