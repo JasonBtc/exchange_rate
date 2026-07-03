@@ -19,4 +19,25 @@ class RateRepository {
     await storage.write(CacheKey.rateTable, table.toJson());
     return table;
   }
+
+  ExchangeRateTable? cached() {
+    final json = storage.read(CacheKey.rateTable);
+    if (json == null) return null;
+    return ExchangeRateTable.fromJson(json);
+  }
+
+  Future<ExchangeRateTable> getRates(
+      {bool forceRefresh = false, DateTime? now}) async {
+    final current = now ?? DateTime.now();
+    final local = cached();
+    if (!forceRefresh && local != null && local.isFromToday(current)) {
+      return local;
+    }
+    try {
+      return await fetchFresh();
+    } on ApiException {
+      if (local != null) return local; // 离线兜底
+      rethrow;
+    }
+  }
 }
