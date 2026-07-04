@@ -1,0 +1,622 @@
+# Review package: 9a7294c..6c9cfcb
+
+## Commits
+6c9cfcb chore: add getx/dio/get_storage/intl deps and clean scaffold
+
+## Files changed
+ lib/main.dart         | 119 +-----------------------
+ pubspec.lock          | 250 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ pubspec.yaml          |   4 +
+ test/widget_test.dart |  25 +----
+ 4 files changed, 261 insertions(+), 137 deletions(-)
+
+## Diff
+diff --git a/lib/main.dart b/lib/main.dart
+index 244a702..c7c3527 100644
+--- a/lib/main.dart
++++ b/lib/main.dart
+@@ -1,122 +1,13 @@
+ import 'package:flutter/material.dart';
+ 
+-void main() {
+-  runApp(const MyApp());
+-}
+-
+-class MyApp extends StatelessWidget {
+-  const MyApp({super.key});
+-
+-  // This widget is the root of your application.
+-  @override
+-  Widget build(BuildContext context) {
+-    return MaterialApp(
+-      title: 'Flutter Demo',
+-      theme: ThemeData(
+-        // This is the theme of your application.
+-        //
+-        // TRY THIS: Try running your application with "flutter run". You'll see
+-        // the application has a purple toolbar. Then, without quitting the app,
+-        // try changing the seedColor in the colorScheme below to Colors.green
+-        // and then invoke "hot reload" (save your changes or press the "hot
+-        // reload" button in a Flutter-supported IDE, or press "r" if you used
+-        // the command line to start the app).
+-        //
+-        // Notice that the counter didn't reset back to zero; the application
+-        // state is not lost during the reload. To reset the state, use hot
+-        // restart instead.
+-        //
+-        // This works for code too, not just values: Most code changes can be
+-        // tested with just a hot reload.
+-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+-      ),
+-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+-    );
+-  }
+-}
+-
+-class MyHomePage extends StatefulWidget {
+-  const MyHomePage({super.key, required this.title});
+-
+-  // This widget is the home page of your application. It is stateful, meaning
+-  // that it has a State object (defined below) that contains fields that affect
+-  // how it looks.
+-
+-  // This class is the configuration for the state. It holds the values (in this
+-  // case the title) provided by the parent (in this case the App widget) and
+-  // used by the build method of the State. Fields in a Widget subclass are
+-  // always marked "final".
+-
+-  final String title;
+-
+-  @override
+-  State<MyHomePage> createState() => _MyHomePageState();
+-}
+-
+-class _MyHomePageState extends State<MyHomePage> {
+-  int _counter = 0;
+-
+-  void _incrementCounter() {
+-    setState(() {
+-      // This call to setState tells the Flutter framework that something has
+-      // changed in this State, which causes it to rerun the build method below
+-      // so that the display can reflect the updated values. If we changed
+-      // _counter without calling setState(), then the build method would not be
+-      // called again, and so nothing would appear to happen.
+-      _counter++;
+-    });
+-  }
++void main() => runApp(const PlaceholderApp());
+ 
++class PlaceholderApp extends StatelessWidget {
++  const PlaceholderApp({super.key});
+   @override
+   Widget build(BuildContext context) {
+-    // This method is rerun every time setState is called, for instance as done
+-    // by the _incrementCounter method above.
+-    //
+-    // The Flutter framework has been optimized to make rerunning build methods
+-    // fast, so that you can just rebuild anything that needs updating rather
+-    // than having to individually change instances of widgets.
+-    return Scaffold(
+-      appBar: AppBar(
+-        // TRY THIS: Try changing the color here to a specific color (to
+-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+-        // change color while the other colors stay the same.
+-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+-        // Here we take the value from the MyHomePage object that was created by
+-        // the App.build method, and use it to set our appbar title.
+-        title: Text(widget.title),
+-      ),
+-      body: Center(
+-        // Center is a layout widget. It takes a single child and positions it
+-        // in the middle of the parent.
+-        child: Column(
+-          // Column is also a layout widget. It takes a list of children and
+-          // arranges them vertically. By default, it sizes itself to fit its
+-          // children horizontally, and tries to be as tall as its parent.
+-          //
+-          // Column has various properties to control how it sizes itself and
+-          // how it positions its children. Here we use mainAxisAlignment to
+-          // center the children vertically; the main axis here is the vertical
+-          // axis because Columns are vertical (the cross axis would be
+-          // horizontal).
+-          //
+-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+-          // action in the IDE, or press "p" in the console), to see the
+-          // wireframe for each widget.
+-          mainAxisAlignment: .center,
+-          children: [
+-            const Text('You have pushed the button this many times:'),
+-            Text(
+-              '$_counter',
+-              style: Theme.of(context).textTheme.headlineMedium,
+-            ),
+-          ],
+-        ),
+-      ),
+-      floatingActionButton: FloatingActionButton(
+-        onPressed: _incrementCounter,
+-        tooltip: 'Increment',
+-        child: const Icon(Icons.add),
+-      ),
++    return const MaterialApp(
++      home: Scaffold(body: Center(child: Text('Exchange Rate'))),
+     );
+   }
+ }
+diff --git a/pubspec.lock b/pubspec.lock
+index 5a8356b..955ccb8 100644
+--- a/pubspec.lock
++++ b/pubspec.lock
+@@ -1,13 +1,21 @@
+ # Generated by pub
+ # See https://dart.dev/tools/pub/glossary#lockfile
+ packages:
++  args:
++    dependency: transitive
++    description:
++      name: args
++      sha256: d0481093c50b1da8910eb0bb301626d4d8eb7284aa739614d2b394ee09e3ea04
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.7.0"
+   async:
+     dependency: transitive
+     description:
+       name: async
+       sha256: e2eb0491ba5ddb6177742d2da23904574082139b07c1e33b8503b9f46f3e1a37
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "2.13.1"
+   boolean_selector:
+     dependency: transitive
+@@ -26,62 +34,158 @@ packages:
+     source: hosted
+     version: "1.4.1"
+   clock:
+     dependency: transitive
+     description:
+       name: clock
+       sha256: fddb70d9b5277016c77a80201021d40a2247104d9f4aa7bab7157b7e3f05b84b
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "1.1.2"
++  code_assets:
++    dependency: transitive
++    description:
++      name: code_assets
++      sha256: bf394f466ba9205f1812a0433b392d6af280f155f56651eda7c18cc32ed493b8
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.2.1"
+   collection:
+     dependency: transitive
+     description:
+       name: collection
+       sha256: "2f5709ae4d3d59dd8f7cd309b4e023046b57d8a6c82130785d2b0e5868084e76"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "1.19.1"
++  crypto:
++    dependency: transitive
++    description:
++      name: crypto
++      sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "3.0.7"
+   cupertino_icons:
+     dependency: "direct main"
+     description:
+       name: cupertino_icons
+       sha256: "41e005c33bd814be4d3096aff55b1908d419fde52ca656c8c47719ec745873cd"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "1.0.9"
++  dio:
++    dependency: "direct main"
++    description:
++      name: dio
++      sha256: ea2bad3c89a27635ce2d85cce4d6b199da49a5a48ec77b03e45b65a3b90922b0
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "5.10.0"
++  dio_web_adapter:
++    dependency: transitive
++    description:
++      name: dio_web_adapter
++      sha256: dd58dc3861eb36edb13b217efc006a1c21e5bbc341de8c229b85634fa5e362e4
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.2.0"
+   fake_async:
+     dependency: transitive
+     description:
+       name: fake_async
+       sha256: "5368f224a74523e8d2e7399ea1638b37aecfca824a3cc4dfdf77bf1fa905ac44"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "1.3.3"
++  ffi:
++    dependency: transitive
++    description:
++      name: ffi
++      sha256: "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.2.0"
+   flutter:
+     dependency: "direct main"
+     description: flutter
+     source: sdk
+     version: "0.0.0"
+   flutter_lints:
+     dependency: "direct dev"
+     description:
+       name: flutter_lints
+       sha256: "3105dc8492f6183fb076ccf1f351ac3d60564bff92e20bfc4af9cc1651f4e7e1"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "6.0.0"
+   flutter_test:
+     dependency: "direct dev"
+     description: flutter
+     source: sdk
+     version: "0.0.0"
++  get:
++    dependency: "direct main"
++    description:
++      name: get
++      sha256: "5ed34a7925b85336e15d472cc4cfe7d9ebf4ab8e8b9f688585bf6b50f4c3d79a"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "4.7.3"
++  get_storage:
++    dependency: "direct main"
++    description:
++      name: get_storage
++      sha256: "39db1fffe779d0c22b3a744376e86febe4ade43bf65e06eab5af707dc84185a2"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.1.1"
++  hooks:
++    dependency: transitive
++    description:
++      name: hooks
++      sha256: "9a62a50b50b769a737bc0a8ff381f333529df3ab746b2f6b02e83760231455ba"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.0.2"
++  http_parser:
++    dependency: transitive
++    description:
++      name: http_parser
++      sha256: "178d74305e7866013777bab2c3d8726205dc5a4dd935297175b19a23a2e66571"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "4.1.2"
++  intl:
++    dependency: "direct main"
++    description:
++      name: intl
++      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "0.19.0"
++  jni:
++    dependency: transitive
++    description:
++      name: jni
++      sha256: c2230682d5bc2362c1c9e8d3c7f406d9cbba23ab3f2e203a025dd47e0fb2e68f
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.0.0"
++  jni_flutter:
++    dependency: transitive
++    description:
++      name: jni_flutter
++      sha256: "8b59e590786050b1cd866677dddaf76b1ade5e7bc751abe04b86e84d379d3ba6"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.0.1"
+   leak_tracker:
+     dependency: transitive
+     description:
+       name: leak_tracker
+       sha256: "33e2e26bdd85a0112ec15400c8cbffea70d0f9c3407491f672a2fad47915e2de"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "11.0.2"
+   leak_tracker_flutter_testing:
+     dependency: transitive
+@@ -100,20 +204,28 @@ packages:
+     source: hosted
+     version: "3.0.2"
+   lints:
+     dependency: transitive
+     description:
+       name: lints
+       sha256: "12f842a479589fea194fe5c5a3095abc7be0c1f2ddfa9a0e76aed1dbd26a87df"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "6.1.0"
++  logging:
++    dependency: transitive
++    description:
++      name: logging
++      sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.3.0"
+   matcher:
+     dependency: transitive
+     description:
+       name: matcher
+       sha256: "12956d0ad8390bbcc63ca2e1469c0619946ccb52809807067a7020d57e647aa6"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "0.12.18"
+   material_color_utilities:
+     dependency: transitive
+@@ -124,28 +236,132 @@ packages:
+     source: hosted
+     version: "0.13.0"
+   meta:
+     dependency: transitive
+     description:
+       name: meta
+       sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "1.17.0"
++  mime:
++    dependency: transitive
++    description:
++      name: mime
++      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.0.0"
++  objective_c:
++    dependency: transitive
++    description:
++      name: objective_c
++      sha256: "6cb691c686fa2838c6deb34980d426145c2a5d537491cb83d463c33cdbc726ed"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "9.4.1"
++  package_config:
++    dependency: transitive
++    description:
++      name: package_config
++      sha256: f096c55ebb7deb7e384101542bfba8c52696c1b56fca2eb62827989ef2353bbc
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.2.0"
+   path:
+     dependency: transitive
+     description:
+       name: path
+       sha256: "75cca69d1490965be98c73ceaea117e8a04dd21217b37b292c9ddbec0d955bc5"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "1.9.1"
++  path_provider:
++    dependency: transitive
++    description:
++      name: path_provider
++      sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.1.6"
++  path_provider_android:
++    dependency: transitive
++    description:
++      name: path_provider_android
++      sha256: "69cbd515a62b94d32a7944f086b2f82b4ac40a1d45bebfc00813a430ab2dabcd"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.3.1"
++  path_provider_foundation:
++    dependency: transitive
++    description:
++      name: path_provider_foundation
++      sha256: "2a376b7d6392d80cd3705782d2caa734ca4727776db0b6ec36ef3f1855197699"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.6.0"
++  path_provider_linux:
++    dependency: transitive
++    description:
++      name: path_provider_linux
++      sha256: "58c2005f147315b11e9b4a7bc889cd5203e250cba8e3f012dae259b4972b5c16"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.2.2"
++  path_provider_platform_interface:
++    dependency: transitive
++    description:
++      name: path_provider_platform_interface
++      sha256: "484838772624c3a4b94f1e44a3e19897fee738f2d5c4ce448443b0417f7c9dda"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.1.3"
++  path_provider_windows:
++    dependency: transitive
++    description:
++      name: path_provider_windows
++      sha256: bd6f00dbd873bfb70d0761682da2b3a2c2fccc2b9e84c495821639601d81afe7
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.3.0"
++  platform:
++    dependency: transitive
++    description:
++      name: platform
++      sha256: "5d6b1b0036a5f331ebc77c850ebc8506cbc1e9416c27e59b439f917a902a4984"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "3.1.6"
++  plugin_platform_interface:
++    dependency: transitive
++    description:
++      name: plugin_platform_interface
++      sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.1.8"
++  pub_semver:
++    dependency: transitive
++    description:
++      name: pub_semver
++      sha256: "5bfcf68ca79ef689f8990d1160781b4bad40a3bd5e5218ad4076ddb7f4081585"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "2.2.0"
++  record_use:
++    dependency: transitive
++    description:
++      name: record_use
++      sha256: "2551bd8eecfe95d14ae75f6021ad0248be5c27f138c2ec12fcb52b500b3ba1ed"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "0.6.0"
+   sky_engine:
+     dependency: transitive
+     description: flutter
+     source: sdk
+     version: "0.0.0"
+   source_span:
+     dependency: transitive
+     description:
+       name: source_span
+       sha256: "56a02f1f4cd1a2d96303c0144c93bd6d909eea6bee6bf5a0e0b685edbd4c47ab"
+@@ -185,29 +401,61 @@ packages:
+     source: hosted
+     version: "1.2.2"
+   test_api:
+     dependency: transitive
+     description:
+       name: test_api
+       sha256: "93167629bfc610f71560ab9312acdda4959de4df6fac7492c89ff0d3886f6636"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "0.7.9"
++  typed_data:
++    dependency: transitive
++    description:
++      name: typed_data
++      sha256: f9049c039ebfeb4cf7a7104a675823cd72dba8297f264b6637062516699fa006
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.4.0"
+   vector_math:
+     dependency: transitive
+     description:
+       name: vector_math
+       sha256: d530bd74fea330e6e364cda7a85019c434070188383e1cd8d9777ee586914c5b
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "2.2.0"
+   vm_service:
+     dependency: transitive
+     description:
+       name: vm_service
+       sha256: "0016aef94fc66495ac78af5859181e3f3bf2026bd8eecc72b9565601e19ab360"
+       url: "https://pub.flutter-io.cn"
+     source: hosted
+     version: "15.2.0"
++  web:
++    dependency: transitive
++    description:
++      name: web
++      sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.1.1"
++  xdg_directories:
++    dependency: transitive
++    description:
++      name: xdg_directories
++      sha256: "7a3f37b05d989967cdddcbb571f1ea834867ae2faa29725fd085180e0883aa15"
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "1.1.0"
++  yaml:
++    dependency: transitive
++    description:
++      name: yaml
++      sha256: b9da305ac7c39faa3f030eccd175340f968459dae4af175130b3fc47e40d76ce
++      url: "https://pub.flutter-io.cn"
++    source: hosted
++    version: "3.1.3"
+ sdks:
+   dart: ">=3.11.0 <4.0.0"
+-  flutter: ">=3.18.0-18.0.pre.54"
++  flutter: ">=3.38.4"
+diff --git a/pubspec.yaml b/pubspec.yaml
+index db5b28f..a261fd6 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -27,20 +27,24 @@ environment:
+ # dependencies can be manually updated by changing the version numbers below to
+ # the latest version available on pub.dev. To see which dependencies have newer
+ # versions available, run `flutter pub outdated`.
+ dependencies:
+   flutter:
+     sdk: flutter
+ 
+   # The following adds the Cupertino Icons font to your application.
+   # Use with the CupertinoIcons class for iOS style icons.
+   cupertino_icons: ^1.0.8
++  get: ^4.6.6
++  dio: ^5.7.0
++  get_storage: ^2.1.1
++  intl: ^0.19.0
+ 
+ dev_dependencies:
+   flutter_test:
+     sdk: flutter
+ 
+   # The "flutter_lints" package below contains a set of recommended lints to
+   # encourage good coding practices. The lint set provided by the package is
+   # activated in the `analysis_options.yaml` file located at the root of your
+   # package. See that file for information about deactivating specific lint
+   # rules and activating additional ones.
+diff --git a/test/widget_test.dart b/test/widget_test.dart
+index 87d6ef5..88136e8 100644
+--- a/test/widget_test.dart
++++ b/test/widget_test.dart
+@@ -1,30 +1,11 @@
+-// This is a basic Flutter widget test.
+-//
+-// To perform an interaction with a widget in your test, use the WidgetTester
+-// utility in the flutter_test package. For example, you can send tap and scroll
+-// gestures. You can also use WidgetTester to find child widgets in the widget
+-// tree, read text, and verify that the values of widget properties are correct.
+-
+-import 'package:flutter/material.dart';
+ import 'package:flutter_test/flutter_test.dart';
+ 
+ import 'package:exchange_rate/main.dart';
+ 
+ void main() {
+-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+-    // Build our app and trigger a frame.
+-    await tester.pumpWidget(const MyApp());
+-
+-    // Verify that our counter starts at 0.
+-    expect(find.text('0'), findsOneWidget);
+-    expect(find.text('1'), findsNothing);
+-
+-    // Tap the '+' icon and trigger a frame.
+-    await tester.tap(find.byIcon(Icons.add));
+-    await tester.pump();
++  testWidgets('PlaceholderApp renders title', (WidgetTester tester) async {
++    await tester.pumpWidget(const PlaceholderApp());
+ 
+-    // Verify that our counter has incremented.
+-    expect(find.text('0'), findsNothing);
+-    expect(find.text('1'), findsOneWidget);
++    expect(find.text('Exchange Rate'), findsOneWidget);
+   });
+ }

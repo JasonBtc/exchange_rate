@@ -1,0 +1,130 @@
+# Review package: 230a3ed..cf8dbc8
+
+## Commits
+cf8dbc8 feat: add rates controller with search filter
+
+## Files changed
+ lib/controllers/rates_controller.dart       | 60 +++++++++++++++++++++++++++++
+ test/controllers/rates_controller_test.dart | 47 ++++++++++++++++++++++
+ 2 files changed, 107 insertions(+)
+
+## Diff
+diff --git a/lib/controllers/rates_controller.dart b/lib/controllers/rates_controller.dart
+new file mode 100644
+index 0000000..d99bdb8
+--- /dev/null
++++ b/lib/controllers/rates_controller.dart
+@@ -0,0 +1,60 @@
++import 'package:get/get.dart';
++import '../core/api_client.dart';
++import '../core/constants.dart';
++import '../core/currency_meta.dart';
++import '../models/currency.dart';
++import '../models/exchange_rate_table.dart';
++import '../repositories/rate_repository.dart';
++
++class RateRow {
++  final Currency currency;
++  final double rate;
++  RateRow(this.currency, this.rate);
++}
++
++class RatesController extends GetxController {
++  final RateRepository repo;
++  RatesController({required this.repo});
++
++  final quote = kDefaultBase.obs; // CNY
++  final search = ''.obs;
++  final table = Rxn<ExchangeRateTable>();
++  final isLoading = false.obs;
++
++  List<RateRow> get rows {
++    final t = table.value;
++    if (t == null) return [];
++    final q = search.value.trim().toUpperCase();
++    final result = <RateRow>[];
++    for (final code in kDefaultCurrencies) {
++      if (code == quote.value) continue;
++      final r = t.rate(code, quote.value);
++      if (r == null) continue;
++      final cur = currencyOf(code);
++      if (q.isNotEmpty &&
++          !code.contains(q) &&
++          !cur.cnName.toUpperCase().contains(q)) {
++        continue;
++      }
++      result.add(RateRow(cur, r));
++    }
++    return result;
++  }
++
++  @override
++  void onInit() {
++    super.onInit();
++    load();
++  }
++
++  Future<void> load({bool forceRefresh = false}) async {
++    isLoading.value = true;
++    try {
++      table.value = await repo.getRates(forceRefresh: forceRefresh);
++    } on ApiException {
++      // 静默：保留上次数据
++    } finally {
++      isLoading.value = false;
++    }
++  }
++}
+diff --git a/test/controllers/rates_controller_test.dart b/test/controllers/rates_controller_test.dart
+new file mode 100644
+index 0000000..ea00b5c
+--- /dev/null
++++ b/test/controllers/rates_controller_test.dart
+@@ -0,0 +1,47 @@
++import 'package:flutter_test/flutter_test.dart';
++import 'package:exchange_rate/controllers/rates_controller.dart';
++import 'package:exchange_rate/repositories/rate_repository.dart';
++import 'package:exchange_rate/core/api_client.dart';
++
++class _StubApi extends ApiClient {
++  @override
++  Future<Map<String, dynamic>> getLatest(String base) async => {
++        'result': 'success',
++        'base_code': 'USD',
++        'time_last_update_unix':
++            DateTime.now().millisecondsSinceEpoch ~/ 1000,
++        'rates': {'USD': 1, 'CNY': 7.26, 'EUR': 0.93, 'JPY': 157.0},
++      };
++}
++
++class _MemStorage implements RateStorage {
++  final Map<String, Map<String, dynamic>> box = {};
++  @override
++  Map<String, dynamic>? read(String key) => box[key];
++  @override
++  Future<void> write(String key, Map<String, dynamic> value) async =>
++      box[key] = value;
++}
++
++void main() {
++  late RatesController c;
++  setUp(() {
++    c = RatesController(
++      repo: RateRepository(api: _StubApi(), storage: _MemStorage()),
++    );
++  });
++
++  test('rows 生成非基准币种行且换算为 CNY', () async {
++    await c.load();
++    final usd = c.rows.firstWhere((r) => r.currency.code == 'USD');
++    expect(usd.rate, closeTo(7.26, 0.01)); // 1 USD ≈ 7.26 CNY
++    expect(c.rows.any((r) => r.currency.code == 'CNY'), isFalse);
++  });
++
++  test('search 过滤', () async {
++    await c.load();
++    c.search.value = 'USD';
++    expect(c.rows.length, 1);
++    expect(c.rows.first.currency.code, 'USD');
++  });
++}

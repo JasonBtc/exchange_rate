@@ -1,0 +1,118 @@
+# Review package: 9374d81..37f16ae
+
+## Commits
+37f16ae feat: add cache-first getRates with today validity and offline fallback
+
+## Files changed
+ lib/repositories/rate_repository.dart       | 21 +++++++++++++
+ test/repositories/rate_repository_test.dart | 46 +++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+)
+
+## Diff
+diff --git a/lib/repositories/rate_repository.dart b/lib/repositories/rate_repository.dart
+index d2603e6..2d5f004 100644
+--- a/lib/repositories/rate_repository.dart
++++ b/lib/repositories/rate_repository.dart
+@@ -12,11 +12,32 @@ class RateRepository {
+   final RateStorage storage;
+ 
+   RateRepository({required this.api, required this.storage});
+ 
+   Future<ExchangeRateTable> fetchFresh() async {
+     final json = await api.getLatest('USD');
+     final table = ExchangeRateTable.fromApi(json);
+     await storage.write(CacheKey.rateTable, table.toJson());
+     return table;
+   }
++
++  ExchangeRateTable? cached() {
++    final json = storage.read(CacheKey.rateTable);
++    if (json == null) return null;
++    return ExchangeRateTable.fromJson(json);
++  }
++
++  Future<ExchangeRateTable> getRates(
++      {bool forceRefresh = false, DateTime? now}) async {
++    final current = now ?? DateTime.now();
++    final local = cached();
++    if (!forceRefresh && local != null && local.isFromToday(current)) {
++      return local;
++    }
++    try {
++      return await fetchFresh();
++    } on ApiException {
++      if (local != null) return local; // 离线兜底
++      rethrow;
++    }
++  }
+ }
+diff --git a/test/repositories/rate_repository_test.dart b/test/repositories/rate_repository_test.dart
+index 8488104..81deae7 100644
+--- a/test/repositories/rate_repository_test.dart
++++ b/test/repositories/rate_repository_test.dart
+@@ -14,19 +14,65 @@ class _FakeApi extends ApiClient {
+ 
+ class _FakeStorage implements RateStorage {
+   final Map<String, Map<String, dynamic>> box = {};
+   @override
+   Map<String, dynamic>? read(String key) => box[key];
+   @override
+   Future<void> write(String key, Map<String, dynamic> value) async =>
+       box[key] = value;
+ }
+ 
++class _CountingApi extends ApiClient {
++  final void Function() onCall;
++  _CountingApi(this.onCall);
++  @override
++  Future<Map<String, dynamic>> getLatest(String base) async {
++    onCall();
++    return {
++      'result': 'success',
++      'base_code': 'USD',
++      'time_last_update_unix': 1751500800,
++      'rates': {'USD': 1, 'CNY': 7.26},
++    };
++  }
++}
++
+ void main() {
+   test('fetchFresh 拉取并写入缓存', () async {
+     final storage = _FakeStorage();
+     final repo = RateRepository(api: _FakeApi(), storage: storage);
+     final table = await repo.fetchFresh();
+     expect(table.usdRates['CNY'], 7.26);
+     expect(storage.box.containsKey('rate_table'), isTrue);
+   });
++
++  test('getRates 命中当天缓存则不请求网络', () async {
++    final storage = _FakeStorage();
++    // 预置今天的缓存
++    final today = DateTime.now();
++    storage.box['rate_table'] = {
++      'base': 'USD',
++      'usdRates': {'USD': 1.0, 'CNY': 7.0},
++      'updatedAt': today.millisecondsSinceEpoch,
++    };
++    var apiCalled = false;
++    final repo = RateRepository(
++      api: _CountingApi(() => apiCalled = true),
++      storage: storage,
++    );
++    final table = await repo.getRates(now: today);
++    expect(apiCalled, isFalse);
++    expect(table.usdRates['CNY'], 7.0);
++  });
++
++  test('getRates 缓存过期则请求网络', () async {
++    final storage = _FakeStorage();
++    storage.box['rate_table'] = {
++      'base': 'USD',
++      'usdRates': {'USD': 1.0, 'CNY': 7.0},
++      'updatedAt': DateTime(2020, 1, 1).millisecondsSinceEpoch,
++    };
++    final repo = RateRepository(api: _FakeApi(), storage: storage);
++    final table = await repo.getRates(now: DateTime.now());
++    expect(table.usdRates['CNY'], 7.26); // 来自网络
++  });
+ }

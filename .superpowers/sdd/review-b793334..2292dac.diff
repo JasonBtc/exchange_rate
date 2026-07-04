@@ -1,0 +1,97 @@
+# Review package: b793334..2292dac
+
+## Commits
+2292dac fix: manage TextEditingController lifecycle in converter page
+
+## Files changed
+ lib/views/converter/converter_page.dart | 40 ++++++++++++++++++++++++++++-----
+ test/views/converter_page_test.dart     |  2 +-
+ 2 files changed, 35 insertions(+), 7 deletions(-)
+
+## Diff
+diff --git a/lib/views/converter/converter_page.dart b/lib/views/converter/converter_page.dart
+index 4c7ee16..1702f52 100644
+--- a/lib/views/converter/converter_page.dart
++++ b/lib/views/converter/converter_page.dart
+@@ -1,27 +1,55 @@
+ import 'package:flutter/material.dart';
+ import 'package:get/get.dart';
+ import '../../controllers/converter_controller.dart';
+ import '../../controllers/settings_controller.dart';
+ import '../../core/currency_meta.dart';
+ import 'widgets/currency_picker.dart';
+ 
+-class ConverterPage extends StatelessWidget {
++class ConverterPage extends StatefulWidget {
+   const ConverterPage({super.key});
+ 
+   @override
+-  Widget build(BuildContext context) {
+-    final c = Get.find<ConverterController>();
+-    final settings = Get.find<SettingsController>();
+-    final amountCtrl = TextEditingController(
+-        text: c.amount.value == 0 ? '' : c.amount.value.toString());
++  State<ConverterPage> createState() => _ConverterPageState();
++}
++
++class _ConverterPageState extends State<ConverterPage> {
++  late final ConverterController c;
++  late final SettingsController settings;
++  late final TextEditingController amountCtrl;
++  Worker? _amountWorker;
++
++  String _amountToText(double v) => v == 0 ? '' : v.toString();
++
++  @override
++  void initState() {
++    super.initState();
++    c = Get.find<ConverterController>();
++    settings = Get.find<SettingsController>();
++    amountCtrl = TextEditingController(text: _amountToText(c.amount.value));
++    _amountWorker = ever<double>(c.amount, (v) {
++      final next = _amountToText(v);
++      if (amountCtrl.text != next) {
++        amountCtrl.text = next;
++      }
++    });
++  }
++
++  @override
++  void dispose() {
++    _amountWorker?.dispose();
++    amountCtrl.dispose();
++    super.dispose();
++  }
+ 
++  @override
++  Widget build(BuildContext context) {
+     return Scaffold(
+       appBar: AppBar(title: const Text('实时换算')),
+       body: RefreshIndicator(
+         onRefresh: () => c.load(forceRefresh: true),
+         child: ListView(
+           padding: const EdgeInsets.all(16),
+           children: [
+             Obx(() {
+               final baseCur = currencyOf(c.base.value);
+               final targetCur = currencyOf(c.target.value);
+diff --git a/test/views/converter_page_test.dart b/test/views/converter_page_test.dart
+index 2391242..d776205 100644
+--- a/test/views/converter_page_test.dart
++++ b/test/views/converter_page_test.dart
+@@ -41,14 +41,14 @@ void main() {
+   testWidgets('显示结果数值', (tester) async {
+     final repo = RateRepository(api: _StubApi(), storage: _Mem());
+     Get.put(SettingsController(storage: _MemSettingsStorage()));
+     final c = Get.put(ConverterController(repo: repo));
+     await c.load();
+     c.setAmount('726');
+ 
+     await tester.pumpWidget(const GetMaterialApp(home: ConverterPage()));
+     await tester.pump();
+ 
+-    expect(find.textContaining('100'), findsWidgets); // 726 CNY ≈ 100 USD
++    expect(find.text('100.00'), findsWidgets); // 726 CNY ≈ 100.00 USD
+     Get.reset();
+   });
+ }

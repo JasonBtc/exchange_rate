@@ -1,0 +1,129 @@
+# Review package: 37f16ae..230a3ed
+
+## Commits
+230a3ed feat: add converter controller
+
+## Files changed
+ lib/controllers/converter_controller.dart       | 54 +++++++++++++++++++++++++
+ test/controllers/converter_controller_test.dart | 52 ++++++++++++++++++++++++
+ 2 files changed, 106 insertions(+)
+
+## Diff
+diff --git a/lib/controllers/converter_controller.dart b/lib/controllers/converter_controller.dart
+new file mode 100644
+index 0000000..3de368e
+--- /dev/null
++++ b/lib/controllers/converter_controller.dart
+@@ -0,0 +1,54 @@
++import 'package:get/get.dart';
++import '../core/api_client.dart';
++import '../core/constants.dart';
++import '../models/exchange_rate_table.dart';
++import '../repositories/rate_repository.dart';
++
++class ConverterController extends GetxController {
++  final RateRepository repo;
++  ConverterController({required this.repo});
++
++  final base = kDefaultBase.obs;
++  final target = kDefaultTarget.obs;
++  final amount = 1.0.obs;
++  final table = Rxn<ExchangeRateTable>();
++  final isLoading = false.obs;
++  final error = RxnString();
++
++  double get result =>
++      table.value?.convert(amount.value, base.value, target.value) ?? 0;
++
++  double get unitRate =>
++      table.value?.rate(base.value, target.value) ?? 0;
++
++  @override
++  void onInit() {
++    super.onInit();
++    load();
++  }
++
++  Future<void> load({bool forceRefresh = false}) async {
++    isLoading.value = true;
++    error.value = null;
++    try {
++      table.value = await repo.getRates(forceRefresh: forceRefresh);
++    } on ApiException catch (e) {
++      error.value = e.message;
++    } finally {
++      isLoading.value = false;
++    }
++  }
++
++  void setAmount(String raw) {
++    amount.value = double.tryParse(raw.trim()) ?? 0;
++  }
++
++  void setBase(String code) => base.value = code;
++  void setTarget(String code) => target.value = code;
++
++  void swap() {
++    final b = base.value;
++    base.value = target.value;
++    target.value = b;
++  }
++}
+diff --git a/test/controllers/converter_controller_test.dart b/test/controllers/converter_controller_test.dart
+new file mode 100644
+index 0000000..b7e8d25
+--- /dev/null
++++ b/test/controllers/converter_controller_test.dart
+@@ -0,0 +1,52 @@
++import 'package:flutter_test/flutter_test.dart';
++import 'package:exchange_rate/controllers/converter_controller.dart';
++import 'package:exchange_rate/repositories/rate_repository.dart';
++import 'package:exchange_rate/core/api_client.dart';
++
++class _StubApi extends ApiClient {
++  @override
++  Future<Map<String, dynamic>> getLatest(String base) async => {
++        'result': 'success',
++        'base_code': 'USD',
++        'time_last_update_unix':
++            DateTime.now().millisecondsSinceEpoch ~/ 1000,
++        'rates': {'USD': 1, 'CNY': 7.26, 'EUR': 0.93},
++      };
++}
++
++class _MemStorage implements RateStorage {
++  final Map<String, Map<String, dynamic>> box = {};
++  @override
++  Map<String, dynamic>? read(String key) => box[key];
++  @override
++  Future<void> write(String key, Map<String, dynamic> value) async =>
++      box[key] = value;
++}
++
++void main() {
++  late ConverterController c;
++  setUp(() {
++    c = ConverterController(
++      repo: RateRepository(api: _StubApi(), storage: _MemStorage()),
++    );
++  });
++
++  test('load 后可换算 CNY->USD', () async {
++    await c.load();
++    c.setAmount('726');
++    expect(c.result, closeTo(100, 0.01));
++  });
++
++  test('swap 交换 base/target', () async {
++    await c.load();
++    c.swap();
++    expect(c.base.value, 'USD');
++    expect(c.target.value, 'CNY');
++  });
++
++  test('setAmount 非法输入置 0', () async {
++    await c.load();
++    c.setAmount('abc');
++    expect(c.amount.value, 0);
++  });
++}

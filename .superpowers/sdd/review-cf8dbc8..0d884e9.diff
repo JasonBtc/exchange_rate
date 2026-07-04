@@ -1,0 +1,129 @@
+# Review package: cf8dbc8..0d884e9
+
+## Commits
+0d884e9 feat: add settings controller with persistence
+
+## Files changed
+ lib/controllers/settings_controller.dart       | 53 ++++++++++++++++++++++++++
+ test/controllers/settings_controller_test.dart | 53 ++++++++++++++++++++++++++
+ 2 files changed, 106 insertions(+)
+
+## Diff
+diff --git a/lib/controllers/settings_controller.dart b/lib/controllers/settings_controller.dart
+new file mode 100644
+index 0000000..09803c8
+--- /dev/null
++++ b/lib/controllers/settings_controller.dart
+@@ -0,0 +1,53 @@
++import 'package:flutter/material.dart';
++import 'package:get/get.dart';
++import 'package:get_storage/get_storage.dart';
++import '../core/constants.dart';
++
++abstract class SettingsStorage {
++  Object? read(String key);
++  Future<void> write(String key, Object value);
++}
++
++class GetStorageSettingsStorage implements SettingsStorage {
++  final GetStorage _box;
++  GetStorageSettingsStorage([GetStorage? box]) : _box = box ?? GetStorage();
++
++  @override
++  Object? read(String key) => _box.read(key);
++
++  @override
++  Future<void> write(String key, Object value) => _box.write(key, value);
++}
++
++class SettingsController extends GetxController {
++  final SettingsStorage storage;
++  SettingsController({SettingsStorage? storage})
++      : storage = storage ?? GetStorageSettingsStorage();
++
++  final isDark = false.obs;
++  final decimals = 2.obs;
++
++  @override
++  void onInit() {
++    super.onInit();
++    _restore();
++  }
++
++  void _restore() {
++    final t = storage.read(CacheKey.themeMode);
++    if (t is bool) isDark.value = t;
++    final d = storage.read(CacheKey.decimals);
++    if (d is int) decimals.value = d;
++  }
++
++  void toggleTheme(bool value) {
++    isDark.value = value;
++    storage.write(CacheKey.themeMode, value);
++    Get.changeThemeMode(value ? ThemeMode.dark : ThemeMode.light);
++  }
++
++  void setDecimals(int d) {
++    decimals.value = d;
++    storage.write(CacheKey.decimals, d);
++  }
++}
+diff --git a/test/controllers/settings_controller_test.dart b/test/controllers/settings_controller_test.dart
+new file mode 100644
+index 0000000..c89560f
+--- /dev/null
++++ b/test/controllers/settings_controller_test.dart
+@@ -0,0 +1,53 @@
++import 'package:flutter_test/flutter_test.dart';
++import 'package:get/get.dart';
++import 'package:exchange_rate/controllers/settings_controller.dart';
++
++class _MemStorage implements SettingsStorage {
++  final Map<String, Object?> box = {};
++  @override
++  Object? read(String key) => box[key];
++  @override
++  Future<void> write(String key, Object value) async => box[key] = value;
++}
++
++void main() {
++  setUpAll(() {
++    Get.testMode = true;
++  });
++
++  test('默认值：isDark=false, decimals=2', () {
++    final s = _MemStorage();
++    final c = SettingsController(storage: s);
++    c.onInit();
++    expect(c.isDark.value, isFalse);
++    expect(c.decimals.value, 2);
++  });
++
++  test('onInit 从存储读回主题与精度', () {
++    final s = _MemStorage();
++    s.box['theme_mode'] = true;
++    s.box['decimals'] = 4;
++    final c = SettingsController(storage: s);
++    c.onInit();
++    expect(c.isDark.value, isTrue);
++    expect(c.decimals.value, 4);
++  });
++
++  test('toggleTheme 写入存储并更新 isDark', () {
++    final s = _MemStorage();
++    final c = SettingsController(storage: s);
++    c.onInit();
++    c.toggleTheme(true);
++    expect(c.isDark.value, isTrue);
++    expect(s.box['theme_mode'], isTrue);
++  });
++
++  test('setDecimals 写入存储并更新 decimals', () {
++    final s = _MemStorage();
++    final c = SettingsController(storage: s);
++    c.onInit();
++    c.setDecimals(6);
++    expect(c.decimals.value, 6);
++    expect(s.box['decimals'], 6);
++  });
++}
