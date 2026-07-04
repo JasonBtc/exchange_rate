@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'package:exchange_rate/controllers/converter_controller.dart';
 import 'package:exchange_rate/controllers/rates_controller.dart';
 import 'package:exchange_rate/controllers/settings_controller.dart';
 import 'package:exchange_rate/core/api_client.dart';
 import 'package:exchange_rate/repositories/rate_repository.dart';
+import 'package:exchange_rate/core/app_translations.dart';
 import 'package:exchange_rate/views/home/home_page.dart';
 
 class _StubApi extends ApiClient {
@@ -54,14 +56,19 @@ void main() {
     Get.reset();
   });
 
-  Widget wrap(Widget child) => MaterialApp(home: child);
+  Widget wrap(Widget child) => GetMaterialApp(
+        translations: AppTranslations(),
+        locale: const Locale('zh', 'CN'),
+        home: child,
+      );
 
   group('HomePage', () {
-    testWidgets('renders three NavigationBar destinations with expected labels',
+    testWidgets('renders three GlassTabBar destinations with expected labels',
         (tester) async {
       await tester.pumpWidget(wrap(const HomePage()));
+      await tester.pumpAndSettle();
 
-      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(GlassTabBar), findsOneWidget);
       expect(find.text('换算'), findsWidgets);
       expect(find.text('行情'), findsWidgets);
       expect(find.text('设置'), findsWidgets);
@@ -70,39 +77,60 @@ void main() {
     testWidgets('starts on the first tab (换算) via IndexedStack index 0',
         (tester) async {
       await tester.pumpWidget(wrap(const HomePage()));
+      await tester.pumpAndSettle();
 
       final stack = tester.widget<IndexedStack>(find.byType(IndexedStack));
       expect(stack.index, 0);
 
-      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      final bar = tester.widget<GlassTabBar>(find.byType(GlassTabBar));
       expect(bar.selectedIndex, 0);
     });
 
     testWidgets('tapping 行情 destination switches IndexedStack to index 1',
         (tester) async {
       await tester.pumpWidget(wrap(const HomePage()));
+      await tester.pumpAndSettle();
 
-      await tester.tap(find.text('行情'));
+      // Page headers reuse these labels (e.g. RatesPage title "行情"), and
+      // IndexedStack builds every child, so scope the tap to the tab bar.
+      // GlassTabBar also renders each label twice (base + glow layer) at the
+      // same spot for its jelly transition, so take the first match.
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(GlassTabBar),
+              matching: find.text('行情'),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
 
       final stack = tester.widget<IndexedStack>(find.byType(IndexedStack));
       expect(stack.index, 1);
 
-      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      final bar = tester.widget<GlassTabBar>(find.byType(GlassTabBar));
       expect(bar.selectedIndex, 1);
     });
 
     testWidgets('tapping 设置 destination switches IndexedStack to index 2',
         (tester) async {
       await tester.pumpWidget(wrap(const HomePage()));
+      await tester.pumpAndSettle();
 
-      await tester.tap(find.text('设置'));
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(GlassTabBar),
+              matching: find.text('设置'),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
 
       final stack = tester.widget<IndexedStack>(find.byType(IndexedStack));
       expect(stack.index, 2);
 
-      final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+      final bar = tester.widget<GlassTabBar>(find.byType(GlassTabBar));
       expect(bar.selectedIndex, 2);
     });
   });

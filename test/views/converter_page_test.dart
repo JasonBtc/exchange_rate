@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:exchange_rate/controllers/converter_controller.dart';
 import 'package:exchange_rate/controllers/settings_controller.dart';
 import 'package:exchange_rate/repositories/rate_repository.dart';
 import 'package:exchange_rate/core/api_client.dart';
+import 'package:exchange_rate/core/app_translations.dart';
 import 'package:exchange_rate/views/converter/converter_page.dart';
 
 class _StubApi extends ApiClient {
@@ -45,7 +47,11 @@ void main() {
     await c.load();
     c.setAmount('726');
 
-    await tester.pumpWidget(const GetMaterialApp(home: ConverterPage()));
+    await tester.pumpWidget(GetMaterialApp(
+      translations: AppTranslations(),
+      locale: const Locale('zh', 'CN'),
+      home: const ConverterPage(),
+    ));
     await tester.pump();
 
     expect(find.text('100.00'), findsWidgets); // 726 CNY ≈ 100.00 USD

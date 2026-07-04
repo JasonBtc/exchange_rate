@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_colors.dart';
+
 /// Theme tokens aligned with the design spec in `汇率设计/css/app.css`.
 ///
 /// Colors are converted from the design's `oklch` tokens to approximate
@@ -69,6 +71,7 @@ class AppTheme {
         centerTitle: false,
         scrolledUnderElevation: 0,
       ),
+      extensions: const [AppColors.light],
     );
   }
 
@@ -101,6 +104,7 @@ class AppTheme {
         ),
       ),
       dividerTheme: const DividerThemeData(color: _darkBorder, thickness: 1),
+      extensions: const [AppColors.dark],
       appBarTheme: const AppBarTheme(
         backgroundColor: _darkBg,
         foregroundColor: _darkFg,

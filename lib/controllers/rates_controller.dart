@@ -26,14 +26,16 @@ class RatesController extends GetxController {
     if (t == null) return [];
     final q = search.value.trim().toUpperCase();
     final result = <RateRow>[];
-    for (final code in kDefaultCurrencies) {
+    for (final code in sortByPopularity(t.usdRates.keys)) {
       if (code == quote.value) continue;
       final r = t.rate(code, quote.value);
       if (r == null) continue;
       final cur = currencyOf(code);
       if (q.isNotEmpty &&
           !code.contains(q) &&
-          !cur.cnName.toUpperCase().contains(q)) {
+          !cur.cnName.toUpperCase().contains(q) &&
+          !cur.enName.toUpperCase().contains(q) &&
+          !cur.jaName.toUpperCase().contains(q)) {
         continue;
       }
       result.add(RateRow(cur, r));

@@ -21,6 +21,11 @@ class ConverterController extends GetxController {
   double get unitRate =>
       table.value?.rate(base.value, target.value) ?? 0;
 
+  /// Every currency code the live rate table can convert. Empty until the
+  /// first successful load; the picker falls back to the full known set.
+  List<String> get availableCodes =>
+      table.value?.usdRates.keys.toList() ?? const [];
+
   @override
   void onInit() {
     super.onInit();

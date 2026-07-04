@@ -6,23 +6,21 @@ import 'package:exchange_rate/core/constants.dart';
 
 void main() {
   group('Currency', () {
-    test('holds the four required fields', () {
+    test('holds the three required fields', () {
       const c = Currency(
         code: 'CNY',
         cnName: '人民币',
         symbol: '¥',
-        flag: '🇨🇳',
       );
       expect(c.code, 'CNY');
       expect(c.cnName, '人民币');
       expect(c.symbol, '¥');
-      expect(c.flag, '🇨🇳');
     });
 
     test('equality and hashCode are based on code only', () {
-      const a = Currency(code: 'USD', cnName: '美元', symbol: r'$', flag: '🇺🇸');
-      const b = Currency(code: 'USD', cnName: 'X', symbol: 'Y', flag: 'Z');
-      const c = Currency(code: 'EUR', cnName: '欧元', symbol: '€', flag: '🇪🇺');
+      const a = Currency(code: 'USD', cnName: '美元', symbol: r'$');
+      const b = Currency(code: 'USD', cnName: 'X', symbol: 'Y');
+      const c = Currency(code: 'EUR', cnName: '欧元', symbol: '€');
 
       expect(a == b, isTrue);
       expect(a.hashCode, b.hashCode);
@@ -39,12 +37,11 @@ void main() {
       }
     });
 
-    test('entries have non-empty Chinese name, symbol and flag', () {
+    test('entries have non-empty Chinese name and symbol', () {
       for (final entry in kCurrencyMeta.entries) {
         final v = entry.value;
         expect(v.cnName, isNotEmpty, reason: '${entry.key} cnName empty');
         expect(v.symbol, isNotEmpty, reason: '${entry.key} symbol empty');
-        expect(v.flag, isNotEmpty, reason: '${entry.key} flag empty');
       }
     });
 
@@ -53,7 +50,6 @@ void main() {
       expect(cny.code, 'CNY');
       expect(cny.cnName, '人民币');
       expect(cny.symbol, '¥');
-      expect(cny.flag, '🇨🇳');
     });
   });
 
@@ -70,7 +66,6 @@ void main() {
       expect(xyz.code, 'XYZ');
       expect(xyz.cnName, 'XYZ');
       expect(xyz.symbol, 'XYZ');
-      expect(xyz.flag, '🏳️');
     });
   });
 
@@ -91,19 +86,23 @@ void main() {
       expect(kDefaultTarget, 'USD');
     });
 
-    test('kDefaultCurrencies is the exact 10-code list from the brief', () {
-      expect(kDefaultCurrencies, const [
-        'CNY',
-        'USD',
-        'EUR',
-        'JPY',
-        'GBP',
-        'AUD',
-        'KRW',
-        'HKD',
-        'CAD',
-        'SGD',
-      ]);
+    test('kPopularCurrencies is an ordering hint led by CNY and USD', () {
+      // The app now shows every currency the live rate table returns;
+      // kPopularCurrencies only pins the common ones to the top. It is no
+      // longer an exhaustive list, but it must stay CNY-first, USD-second,
+      // duplicate-free, and fully covered by the name map.
+      expect(kPopularCurrencies[0], 'CNY');
+      expect(kPopularCurrencies[1], 'USD');
+      expect(kPopularCurrencies.toSet().length, kPopularCurrencies.length,
+          reason: 'kPopularCurrencies has duplicate codes');
+      for (final code in kPopularCurrencies) {
+        expect(kCurrencyMeta.containsKey(code), isTrue,
+            reason: 'meta missing popular code $code');
+      }
+    });
+
+    test('kDefaultCurrencies aliases kPopularCurrencies', () {
+      expect(kDefaultCurrencies, same(kPopularCurrencies));
     });
   });
 }

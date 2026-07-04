@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import 'package:exchange_rate/controllers/rates_controller.dart';
 import 'package:exchange_rate/core/api_client.dart';
+import 'package:exchange_rate/core/app_translations.dart';
 import 'package:exchange_rate/repositories/rate_repository.dart';
 import 'package:exchange_rate/views/rates/rates_page.dart';
 
@@ -42,7 +43,11 @@ void main() {
     Get.reset();
   });
 
-  Widget wrap(Widget child) => MaterialApp(home: child);
+  Widget wrap(Widget child) => GetMaterialApp(
+        translations: AppTranslations(),
+        locale: const Locale('zh', 'CN'),
+        home: child,
+      );
 
   group('RatesPage', () {
     testWidgets('renders app bar 行情 title and search field', (tester) async {
@@ -62,8 +67,9 @@ void main() {
       await tester.pumpWidget(wrap(const RatesPage()));
       await tester.pumpAndSettle();
 
-      // USD row shown with 1 USD ≈ 7.2600 CNY
-      expect(find.textContaining('美元'), findsOneWidget);
+      // USD row shown with 1 USD ≈ 7.2600 CNY. Match the full "美元 USD"
+      // row label so the search hint (搜索美元、JPY、欧元) is not counted.
+      expect(find.textContaining('美元 USD'), findsOneWidget);
       expect(find.textContaining('1 USD ≈ 7.2600 CNY'), findsOneWidget);
       // CNY row (the quote) should be excluded
       expect(find.textContaining('1 CNY ≈'), findsNothing);

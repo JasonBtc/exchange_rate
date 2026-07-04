@@ -38,6 +38,8 @@ dependencies:
   dio: ^5.7.0
   get_storage: ^2.1.1
   intl: ^0.19.0
+  country_flags: ^4.1.2
+  liquid_glass_widgets: ^0.18.4
 
 dev_dependencies:
   flutter_test:
@@ -49,6 +51,23 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# flutter_launcher_icons: generates platform launcher icons from a single
+# source image. Regenerate after changing the source with:
+#   fvm dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  # Android: use an adaptive icon (foreground on a solid background) plus a
+  # legacy fallback generated from the same square source.
+  android: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#090F28"
+  adaptive_icon_foreground: "assets/icon/app_icon_fg.png"
+  # iOS icons must be opaque with no alpha; the square source already has a
+  # solid background baked in.
+  ios: true
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
