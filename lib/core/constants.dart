@@ -1,6 +1,21 @@
 class ApiConst {
-  static const String base = 'https://open.er-api.com/v6/latest';
+  /// Rate API base URL. Overridable at build time via
+  /// `--dart-define=RATE_API_BASE=…` for staging/self-hosted mirrors.
+  static const String base = String.fromEnvironment(
+    'RATE_API_BASE',
+    defaultValue: 'https://open.er-api.com/v6/latest',
+  );
   static const Duration timeout = Duration(seconds: 15);
+
+  /// Fallback cache freshness window when a caller doesn't pass an explicit
+  /// `maxAge` (i.e. the user picked 手动 refresh). Keeps a cold start from
+  /// re-fetching data that's only minutes old.
+  static const Duration defaultMaxAge = Duration(hours: 12);
+
+  /// Number of transient-failure retries for a rate fetch, with a short
+  /// backoff between attempts.
+  static const int maxRetries = 2;
+  static const Duration retryBackoff = Duration(milliseconds: 600);
 }
 
 class CacheKey {

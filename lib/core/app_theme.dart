@@ -11,23 +11,10 @@ import 'app_colors.dart';
 class AppTheme {
   const AppTheme._();
 
-  // Brand & semantic tokens
+  // Brand accent — the single seed color for both schemes. Kept here (and
+  // mirrored by AppColors.accent) as the brand entry point; other surface
+  // colors live only in [AppColors] to avoid a second source of truth.
   static const Color accent = Color(0xFF2F6BFF);
-  static const Color positive = Color(0xFF12A150);
-
-  // Light surface tokens
-  static const Color _lightBg = Color(0xFFF7F8FA);
-  static const Color _lightSurface = Color(0xFFFFFFFF);
-  static const Color _lightFg = Color(0xFF1B1F26);
-  static const Color _lightMuted = Color(0xFF6B7280);
-  static const Color _lightBorder = Color(0xFFE5E8EC);
-
-  // Dark surface tokens
-  static const Color _darkBg = Color(0xFF14181F);
-  static const Color _darkSurface = Color(0xFF1E232B);
-  static const Color _darkFg = Color(0xFFF2F4F7);
-  static const Color _darkMuted = Color(0xFF9AA3AE);
-  static const Color _darkBorder = Color(0xFF2C333D);
 
   static const double _cardRadius = 20;
 
@@ -36,37 +23,38 @@ class AppTheme {
   ];
 
   static ThemeData get light {
+    const c = AppColors.light;
     final scheme = ColorScheme.fromSeed(
       seedColor: accent,
       brightness: Brightness.light,
     ).copyWith(
       primary: accent,
-      surface: _lightSurface,
-      onSurface: _lightFg,
-      outline: _lightBorder,
+      surface: c.surface,
+      onSurface: c.fg,
+      outline: c.border,
     );
 
     final base = ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: scheme,
-      scaffoldBackgroundColor: _lightBg,
+      scaffoldBackgroundColor: c.bg,
     );
 
     return base.copyWith(
-      textTheme: _applyTabularFigures(base.textTheme, _lightFg, _lightMuted),
-      cardTheme: const CardThemeData(
+      textTheme: _applyTabularFigures(base.textTheme, c.fg, c.muted),
+      cardTheme: CardThemeData(
         elevation: 0,
-        color: _lightSurface,
+        color: c.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(_cardRadius)),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: _lightBorder, thickness: 1),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: _lightBg,
-        foregroundColor: _lightFg,
+      dividerTheme: DividerThemeData(color: c.border, thickness: 1),
+      appBarTheme: AppBarTheme(
+        backgroundColor: c.bg,
+        foregroundColor: c.fg,
         elevation: 0,
         centerTitle: false,
         scrolledUnderElevation: 0,
@@ -76,38 +64,39 @@ class AppTheme {
   }
 
   static ThemeData get dark {
+    const c = AppColors.dark;
     final scheme = ColorScheme.fromSeed(
       seedColor: accent,
       brightness: Brightness.dark,
     ).copyWith(
       primary: accent,
-      surface: _darkSurface,
-      onSurface: _darkFg,
-      outline: _darkBorder,
+      surface: c.surface,
+      onSurface: c.fg,
+      outline: c.border,
     );
 
     final base = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: scheme,
-      scaffoldBackgroundColor: _darkBg,
+      scaffoldBackgroundColor: c.bg,
     );
 
     return base.copyWith(
-      textTheme: _applyTabularFigures(base.textTheme, _darkFg, _darkMuted),
-      cardTheme: const CardThemeData(
+      textTheme: _applyTabularFigures(base.textTheme, c.fg, c.muted),
+      cardTheme: CardThemeData(
         elevation: 0,
-        color: _darkSurface,
+        color: c.surface,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(_cardRadius)),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: _darkBorder, thickness: 1),
+      dividerTheme: DividerThemeData(color: c.border, thickness: 1),
       extensions: const [AppColors.dark],
-      appBarTheme: const AppBarTheme(
-        backgroundColor: _darkBg,
-        foregroundColor: _darkFg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: c.bg,
+        foregroundColor: c.fg,
         elevation: 0,
         centerTitle: false,
         scrolledUnderElevation: 0,

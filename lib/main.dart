@@ -10,12 +10,15 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   final box = GetStorage();
-  final dark = box.read(CacheKey.themeMode) ?? false;
-  final localeKey = box.read(CacheKey.localeKey);
+  // Type-guard the restored values: a polluted store (non-bool / non-String)
+  // must fall back to defaults rather than crash startup on `startDark ? …`.
+  final rawDark = box.read(CacheKey.themeMode);
+  final dark = rawDark is bool ? rawDark : false;
+  final rawLocale = box.read(CacheKey.localeKey);
+  final localeKey = rawLocale is String ? rawLocale : kDefaultLocaleKey;
   runApp(ExchangeRateApp(
     startDark: dark,
-    startLocale: appLocaleOf(localeKey is String ? localeKey : kDefaultLocaleKey)
-        .locale,
+    startLocale: appLocaleOf(localeKey).locale,
   ));
 }
 

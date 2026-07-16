@@ -80,24 +80,24 @@ class _ConverterPageState extends State<ConverterPage> {
                 );
               }),
               const SizedBox(height: 14),
-              Obx(() => _converterCard(colors)),
+              _converterCard(colors),
               const SizedBox(height: 14),
               Obx(() {
                 if (c.error.value == null) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 14),
                   child: AppPanel(
-                    borderColor: Colors.red.withValues(alpha: 0.4),
+                    borderColor: colors.danger.withValues(alpha: 0.4),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline,
-                            color: Colors.red, size: 20),
+                        Icon(Icons.error_outline,
+                            color: colors.danger, size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                               'load_failed'
                                   .trParams({'msg': '${c.error.value}'}),
-                              style: const TextStyle(color: Colors.red)),
+                              style: TextStyle(color: colors.danger)),
                         ),
                       ],
                     ),
@@ -113,10 +113,6 @@ class _ConverterPageState extends State<ConverterPage> {
   }
 
   Widget _converterCard(AppColors colors) {
-    final baseCur = currencyOf(c.base.value);
-    final targetCur = currencyOf(c.target.value);
-    final dec = settings.decimals.value;
-
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -126,8 +122,13 @@ class _ConverterPageState extends State<ConverterPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FieldLabel('input_amount'.trParams({'cur': baseCur.nameFor(currentLocaleKey)}),
-              color: colors.onConverterMuted),
+          // Reactive leaves are wrapped individually so a keystroke only
+          // rebuilds the affected label/result, not the whole card (and never
+          // the TextField, which keeps its own state via amountCtrl).
+          Obx(() => FieldLabel(
+              'input_amount'.trParams(
+                  {'cur': currencyOf(c.base.value).nameFor(currentLocaleKey)}),
+              color: colors.onConverterMuted)),
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -153,7 +154,7 @@ class _ConverterPageState extends State<ConverterPage> {
                 ),
               ),
               const SizedBox(width: 12),
-              _chip(c.base.value, colors, _pickBase),
+              Obx(() => _chip(c.base.value, colors, _pickBase)),
             ],
           ),
           Padding(
@@ -168,23 +169,38 @@ class _ConverterPageState extends State<ConverterPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('convert_to'.trParams({'cur': targetCur.nameFor(currentLocaleKey)}),
-                        style: TextStyle(color: colors.onConverterMuted)),
+                    Obx(() => Text(
+                        'convert_to'.trParams({
+                          'cur': currencyOf(c.target.value)
+                              .nameFor(currentLocaleKey)
+                        }),
+                        style: TextStyle(color: colors.onConverterMuted),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis)),
                     const SizedBox(height: 4),
-                    Text(
-                      c.result.toStringAsFixed(dec),
-                      style: TextStyle(
-                        color: colors.onConverter,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w700,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
-                    ),
+                    // Long results (large amounts / 6-digit precision) scale
+                    // down to fit one line instead of wrapping or overflowing.
+                    Obx(() => FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            c.result.toStringAsFixed(settings.decimals.value),
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: colors.onConverter,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w700,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
+                            ),
+                          ),
+                        )),
                   ],
                 ),
               ),
               const SizedBox(width: 12),
-              _chip(c.target.value, colors, _pickTarget),
+              Obx(() => _chip(c.target.value, colors, _pickTarget)),
             ],
           ),
         ],

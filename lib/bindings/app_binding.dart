@@ -11,7 +11,9 @@ class GetStorageAdapter implements RateStorage {
   @override
   Map<String, dynamic>? read(String key) {
     final v = _box.read(key);
-    return v == null ? null : Map<String, dynamic>.from(v);
+    // Guard against a polluted / schema-migrated entry that isn't a map, so a
+    // bad cache value degrades to a miss instead of throwing on Map.from.
+    return v is Map ? Map<String, dynamic>.from(v) : null;
   }
 
   @override

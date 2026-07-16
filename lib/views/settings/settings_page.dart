@@ -104,6 +104,15 @@ class _RefreshRatePanel extends StatelessWidget {
     }
   }
 
+  /// The refresh cadence shown on the sync card. Distinct wording from the
+  /// segmented options ("每…") so it doesn't collide with them in the widget
+  /// tree, and — unlike the old wall-clock "next refresh at HH:MM" — it never
+  /// goes stale as time passes since it only depends on the interval.
+  String _intervalLabel(int minutes) {
+    if (minutes >= 60) return 'refresh_interval_hour'.tr;
+    return 'refresh_interval_min'.trParams({'n': '$minutes'});
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
@@ -154,7 +163,9 @@ class _RefreshRatePanel extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    manual ? 'refresh_off'.tr : _nextRefreshLabel(controller),
+                    manual
+                        ? 'refresh_off'.tr
+                        : _intervalLabel(controller.refreshMinutes.value),
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -169,15 +180,6 @@ class _RefreshRatePanel extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  /// Wall-clock time of the next auto refresh, `refreshMinutes` from now.
-  String _nextRefreshLabel(SettingsController c) {
-    final next =
-        DateTime.now().add(Duration(minutes: c.refreshMinutes.value));
-    final hh = next.hour.toString().padLeft(2, '0');
-    final mm = next.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
   }
 }
 

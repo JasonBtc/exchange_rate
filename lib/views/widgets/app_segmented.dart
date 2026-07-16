@@ -85,10 +85,17 @@ class _Segment extends StatelessWidget {
           borderRadius: BorderRadius.circular(11),
           onTap: onTap,
           child: Container(
-            height: 36,
+            // A minimum (not fixed) height keeps the 44dp touch target while
+            // letting a large font scale or a long translated label grow the
+            // row instead of clipping it.
+            constraints: const BoxConstraints(minHeight: 44),
             alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: compact ? 12 : 14,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w500,

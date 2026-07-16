@@ -15,6 +15,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.accent,
     required this.accentSoft,
     required this.positive,
+    required this.danger,
     required this.fgSoft,
     required this.converterBg,
     required this.onConverter,
@@ -45,6 +46,9 @@ class AppColors extends ThemeExtension<AppColors> {
   /// Positive / up movement (`--positive`).
   final Color positive;
 
+  /// Error / failure state (used by the converter's load-failure panel).
+  final Color danger;
+
   /// 6% foreground wash used for segmented tracks (`--fg-soft`).
   final Color fgSoft;
 
@@ -66,6 +70,7 @@ class AppColors extends ThemeExtension<AppColors> {
     accent: Color(0xFF2F6BFF),
     accentSoft: Color(0x1F2F6BFF),
     positive: Color(0xFF12A150),
+    danger: Color(0xFFD92D20),
     fgSoft: Color(0x0F1B1F26),
     converterBg: Color(0xFF1B1F26),
     onConverter: Color(0xFFFFFFFF),
@@ -81,6 +86,7 @@ class AppColors extends ThemeExtension<AppColors> {
     accent: Color(0xFF2F6BFF),
     accentSoft: Color(0x2E2F6BFF),
     positive: Color(0xFF12A150),
+    danger: Color(0xFFF87171),
     fgSoft: Color(0x14FFFFFF),
     converterBg: Color(0xFF11151C),
     onConverter: Color(0xFFF2F4F7),
@@ -97,6 +103,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? accent,
     Color? accentSoft,
     Color? positive,
+    Color? danger,
     Color? fgSoft,
     Color? converterBg,
     Color? onConverter,
@@ -111,6 +118,7 @@ class AppColors extends ThemeExtension<AppColors> {
       accent: accent ?? this.accent,
       accentSoft: accentSoft ?? this.accentSoft,
       positive: positive ?? this.positive,
+      danger: danger ?? this.danger,
       fgSoft: fgSoft ?? this.fgSoft,
       converterBg: converterBg ?? this.converterBg,
       onConverter: onConverter ?? this.onConverter,
@@ -130,6 +138,7 @@ class AppColors extends ThemeExtension<AppColors> {
       accent: Color.lerp(accent, other.accent, t)!,
       accentSoft: Color.lerp(accentSoft, other.accentSoft, t)!,
       positive: Color.lerp(positive, other.positive, t)!,
+      danger: Color.lerp(danger, other.danger, t)!,
       fgSoft: Color.lerp(fgSoft, other.fgSoft, t)!,
       converterBg: Color.lerp(converterBg, other.converterBg, t)!,
       onConverter: Color.lerp(onConverter, other.onConverter, t)!,

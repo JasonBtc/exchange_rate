@@ -174,6 +174,12 @@ const Map<String, Currency> kCurrencyMeta = {
 Currency currencyOf(String code) =>
     kCurrencyMeta[code] ?? Currency(code: code, cnName: code, symbol: code);
 
+/// Rank lookup for [kPopularCurrencies], computed once. Previously this map was
+/// rebuilt on every [sortByPopularity] call (i.e. every rates-list rebuild).
+final Map<String, int> _popularityRank = {
+  for (var i = 0; i < kPopularCurrencies.length; i++) kPopularCurrencies[i]: i,
+};
+
 /// Orders currency [codes] with the common ones first (in the order they
 /// appear in [kPopularCurrencies]), followed by the rest alphabetically.
 ///
@@ -181,14 +187,10 @@ Currency currencyOf(String code) =>
 /// currencies stay near the top while the full ~160-code set remains
 /// reachable below.
 List<String> sortByPopularity(Iterable<String> codes) {
-  final rank = <String, int>{
-    for (var i = 0; i < kPopularCurrencies.length; i++)
-      kPopularCurrencies[i]: i,
-  };
   final list = codes.toList();
   list.sort((a, b) {
-    final ra = rank[a];
-    final rb = rank[b];
+    final ra = _popularityRank[a];
+    final rb = _popularityRank[b];
     if (ra != null && rb != null) return ra.compareTo(rb);
     if (ra != null) return -1;
     if (rb != null) return 1;
